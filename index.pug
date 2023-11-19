@@ -1,0 +1,83 @@
+doctype html
+html(lang='en' style='height: 100%; margin: 0px; padding: 0px')
+  head
+    meta(charset='utf-8')
+    meta(name='viewport' content='width=device-width,height=device-height,initial-scale=1,viewport-fit=cover')
+    title Pug and Python Widget
+
+    link(rel='stylesheet' data-name='vs/editor/editor.main' href='lib/vs/editor/editor.main.css')
+    script(src='/grist-plugin-api.js')
+    script(src="lib/pug.js")
+    script.
+      var pug = require('pug');
+      var require = {paths: {'vs': 'lib/vs'}};
+    script(src='lib/vs/loader.js')
+    script(src='lib/vs/editor/editor.main.nls.js')
+    script(src='lib/vs/editor/editor.main.js')
+    script(src='lib/brython.js')
+
+    style.
+      body {height: 100%; display: flex; flex-direction: column; margin: 0px; overflow: hidden;}
+      #page_editor {display: none; flex-grow:1; box-sizing: border-box; border-top:1px solid #a0a0a0;  border-bottom:1px solid #a0a0a0;}
+        #container {border-top:0px; height: 100%; box-sizing: border-box;}
+      #page_widget {flex: 1; border: 0px; display: none;}
+        #page_widget iframe {height: 100%; width: 100%; border: 0px;}
+      #_bar {display: none; flex: 0; justify-content: space-between; font-size: 12px; font-family: Arial, Helvetica, sans-serif;}
+      ._tab {padding: 2px 8px; border: 1px solid gray; cursor: pointer;}
+        #pug {background: lightgreen;}
+        ._tab .content {display: none;}
+      ._btn {padding: 2px 8px; border: 1px solid gray; cursor: pointer;}
+        #editor {display: none;}
+
+  body(onload='brython(2)')
+    #_bar
+      div
+        ._tab#pug(onclick='changeModel("pug");' data-type="pug")
+          .title PUG
+          .content.
+            doctype html
+            html(lang="fr")
+              head
+                script(src="/grist-plugin-api.js")
+                script(src="lib/brython.js")
+                script(src="lib/toastui-chart.min.js")
+              body(onload="brython(2)")
+                #content
+                if rec || recs
+                  pre
+                    code.content= JSON.stringify((rec || recs), null, 2)
+                else
+                  .content Veuillez sélectionner une ligne.
+                script(type="text/python").
+                  from browser import console, document, window
+                  from browser.html import CODE, DIV, EM, PRE
+                  grist, JSON = window.grist, window.JSON
+                  content_div = document.select_one("#content")
+
+                  content_div <= DIV(EM("Voilà."))
+                  def display(data):
+                    content_div <= DIV(PRE(CODE(JSON.stringify(data))))
+                  grist.docApi.fetchSelectedTable().then(display)
+        ._tab#py(onclick='changeModel("py");' data-type="python")
+          .title PY
+          .content.
+            from browser import window
+            grist, render_pug = window.grist, window.render_pug
+
+            def onRecord(rec, *args):
+              render_pug({{"rec": rec}})
+
+            def onRecords(recs, *args):
+              render_pug({{"recs": recs}})
+
+            #grist.onRecord(onRecord)
+            #grist.onRecords(onRecords)
+            render_pug()
+      div
+        ._btn#install(onclick='install();') Install
+        ._btn#preview(onclick='showPreview();') Preview
+        ._btn#editor(onclick='showEditor();') Editor
+    #page_editor
+      #container
+    #page_widget
+    script(type='module' src='js/api.js')
