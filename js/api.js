@@ -1,4 +1,4 @@
-// Transcrypt'ed from Python, 2023-11-20 22:09:31
+// Transcrypt'ed from Python, 2023-11-21 14:18:33
 import {AssertionError, AttributeError, BaseException, DeprecationWarning, Exception, IndexError, IterableError, KeyError, NotImplementedError, RuntimeWarning, StopIteration, UserWarning, ValueError, Warning, __JsIterator__, __PyIterator__, __Terminal__, __add__, __and__, __call__, __class__, __envir__, __eq__, __floordiv__, __ge__, __get__, __getcm__, __getitem__, __getslice__, __getsm__, __gt__, __i__, __iadd__, __iand__, __idiv__, __ijsmod__, __ilshift__, __imatmul__, __imod__, __imul__, __in__, __init__, __ior__, __ipow__, __irshift__, __isub__, __ixor__, __jsUsePyNext__, __jsmod__, __k__, __kwargtrans__, __le__, __lshift__, __lt__, __matmul__, __mergefields__, __mergekwargtrans__, __mod__, __mul__, __ne__, __neg__, __nest__, __or__, __pow__, __pragma__, __pyUseJsNext__, __rshift__, __setitem__, __setproperty__, __setslice__, __sort__, __specialattrib__, __sub__, __super__, __t__, __terminal__, __truediv__, __withblock__, __xor__, abs, all, any, assert, bool, bytearray, bytes, callable, chr, copy, deepcopy, delattr, dict, dir, divmod, enumerate, filter, float, getattr, hasattr, input, int, isinstance, issubclass, len, list, map, max, min, object, ord, pow, print, property, py_TypeError, py_iter, py_metatype, py_next, py_reversed, py_typeof, range, repr, round, set, setattr, sorted, str, sum, tuple, zip} from './org.transcrypt.__runtime__.js';
 var __name__ = '__main__';
 var __left0__ = tuple ([window.grist, window.monaco, window.pug, window.sessionStorage, window.JSON]);
@@ -42,13 +42,19 @@ export var memory = function (py_name) {
 	_memory [key] = fn;
 	return fn;
 };
+export var changeModel = function (el) {
+	widget.editor.setModel (models [el.id]);
+	for (var tab of document.querySelectorAll ('._tab')) {
+		tab.style.background = 'transparent';
+	}
+	el.style.background = 'lightgreen';
+};
 export var buildEditor = function () {
 	for (var tab of document.querySelectorAll ('._tab')) {
-		var __left0__ = tuple ([tab.id, tab.dataset.type, tab.children [0].innerHTML, tab.children [1].innerHTML.py_replace ('&lt;', '<')]);
+		var __left0__ = tuple ([tab.id, tab.dataset.type, tab.children [1].innerHTML.py_replace ('&lt;', '<')]);
 		var _id = __left0__ [0];
 		var _type = __left0__ [1];
-		var _title = __left0__ [2];
-		var _content = __left0__ [3];
+		var _content = __left0__ [2];
 		var model = monaco.editor.createModel (memory (_id) () || _content, _type);
 		model.onDidChangeContent ((function __lambda__ () {
 			var args = tuple ([].slice.apply (arguments).slice (0));
@@ -56,6 +62,10 @@ export var buildEditor = function () {
 		}));
 		model._type = _type;
 		models [_id] = model;
+		tab.addEventListener ('click', (function __lambda__ (e) {
+			var args = tuple ([].slice.apply (arguments).slice (1));
+			return changeModel (e.target);
+		}));
 	}
 	var editor = monaco.editor.create (document.getElementById ('container'), dict ({'model': models.pug, 'automaticLayout': true, 'fontSize': '13px', 'wordWrap': 'on', 'minimap': dict ({'enabled': false}), 'lineNumbers': 'on', 'glyphMargin': false, 'folding': false}));
 	editor.getModel ().updateOptions (dict ({'tabSize': 2}));
@@ -66,13 +76,6 @@ export var purge = function (el) {
 	while (el.firstChild) {
 		el.removeChild (el.firstChild);
 	}
-};
-export var changeModel = function (lang) {
-	widget.editor.setModel (models [lang]);
-	for (var tab of document.querySelectorAll ('._tab')) {
-		tab.style.background = 'white';
-	}
-	document.getElementById (lang).style.background = 'lightgreen';
 };
 export var showPreview = function () {
 	for (var k in models) {
@@ -111,7 +114,6 @@ export var showPreview = function () {
 			var pyscript = document.createElement ('script');
 			pyscript.type = 'text/python';
 			pyscript.innerHTML = code;
-			console.log (pyscript, document.head);
 			document.head.appendChild (pyscript);
 		}
 		else if (model._type == 'javascript') {
@@ -201,10 +203,8 @@ export var install = function () {
 	grist.setOptions (options).then (window.location.reload ());
 };
 grist.ready ({'onEditOptions': showEditor});
-var __left0__ = tuple ([changeModel, install, showEditor, showPreview]);
-window.changeModel = __left0__ [0];
-window.install = __left0__ [1];
-window.showEditor = __left0__ [2];
-window.showPreview = __left0__ [3];
+document.getElementById ('install').onclick = install;
+document.getElementById ('preview').onclick = showPreview;
+document.getElementById ('editor').onclick = showEditor;
 
 //# sourceMappingURL=api.map

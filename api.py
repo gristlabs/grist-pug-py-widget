@@ -24,13 +24,20 @@ def memory(name):
   _memory[key] = fn
   return fn
 
+def changeModel(el):
+  widget.editor.setModel(models[el.id])
+  for tab in document.querySelectorAll("._tab"):
+    tab.style.background = 'transparent'
+  el.style.background = 'lightgreen'
+
 def buildEditor():
   for tab in document.querySelectorAll("._tab"):
-    _id, _type, _title, _content = tab.id, tab.dataset.js_type, tab.children[0].innerHTML, tab.children[1].innerHTML.replace("&lt;", "<")
+    _id, _type, _content = tab.id, tab.dataset.js_type, tab.children[1].innerHTML.replace("&lt;", "<")
     model = monaco.editor.createModel(memory(_id)() or _content, _type)
     model.onDidChangeContent(lambda *args: memory(_id)(model.getValue()))
     model._type = _type
     models[_id] = model
+    tab.addEventListener("click", lambda e, *args: changeModel(e.target))
   # Create PY monaco model - like a tab in the IDE.
   # Create IDE. Options here are only for styling and making editor look like a
   # code snippet.
@@ -54,12 +61,6 @@ def purge(el):
   while el.firstChild:
     el.removeChild(el.firstChild)
 
-def changeModel(lang):
-  widget.editor.setModel(models[lang])
-  for tab in document.querySelectorAll("._tab"):
-    tab.style.background = 'white'
-  document.getElementById(lang).style.background = 'lightgreen'
-
 def showPreview():
   __pragma__('jsiter')
   for k in models:
@@ -67,7 +68,7 @@ def showPreview():
     code = model.getValue()
     if model._type == "pug":
       fnPug = pug.compile(code)
-      lastListener = None;
+      lastListener = None
       def render_pug(*data):
         nonlocal lastListener
         page_widget = document.getElementById('page_widget')
@@ -93,7 +94,6 @@ def showPreview():
       pyscript = document.createElement("script")
       pyscript.js_type = "text/python"
       pyscript.innerHTML = code
-      console.log(pyscript, document.head)
       document.head.appendChild(pyscript)
     elif model._type == "javascript":
       jsscript = document.createElement("script")
@@ -166,5 +166,6 @@ def install():
 
 grist.ready({"onEditOptions": showEditor})
 
-window.changeModel, window.install, window.showEditor, window.showPreview = \
-  changeModel, install, showEditor, showPreview
+document.getElementById("install").onclick = install
+document.getElementById("preview").onclick = showPreview
+document.getElementById("editor").onclick = showEditor

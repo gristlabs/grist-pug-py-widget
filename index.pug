@@ -26,16 +26,15 @@ html(lang='en' style='height: 100%; margin: 0px; padding: 0px')
         #_bar div {display: flex; flex-direction: row;}
       ._tab {padding: 2px 8px; border: 1px solid gray; cursor: pointer;}
         #pug {background: lightgreen;}
-        ._tab .content {display: none;}
+        ._tab * {pointer-events: none;}
       ._btn {padding: 2px 8px; border: 1px solid gray; cursor: pointer;}
-        #editor {display: none;}
 
-  body(onload='brython(2)')
+  body
     #_bar
       div
-        ._tab#pug(onclick='changeModel("pug");' data-type="pug")
-          .title PUG
-          .content.
+        ._tab#pug(data-type="pug")
+          text PUG
+          .content(style="display:none;").
             doctype html
             html(lang="fr")
               head
@@ -59,9 +58,9 @@ html(lang='en' style='height: 100%; margin: 0px; padding: 0px')
                   def display(data):
                     content_div <= DIV(PRE(CODE(JSON.stringify(data))))
                   grist.docApi.fetchSelectedTable().then(display)
-        ._tab#py(onclick='changeModel("py");' data-type="python")
-          .title PY
-          .content.
+        ._tab#py(data-type="python")
+          text PY
+          .content(style="display:none;").
             from browser import window
             grist, render_pug = window.grist, window.render_pug
 
@@ -75,9 +74,9 @@ html(lang='en' style='height: 100%; margin: 0px; padding: 0px')
             #grist.onRecords(onRecords)
             render_pug()
       div
-        ._btn#install(onclick='install();') Install
-        ._btn#preview(onclick='showPreview();') Preview
-        ._btn#editor(onclick='showEditor();') Editor
+        ._btn#install Install
+        ._btn#preview Preview
+        ._btn#editor(style="display: none;") Editor
     #page_editor
       #container
     #page_widget
