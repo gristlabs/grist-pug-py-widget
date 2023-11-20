@@ -164,16 +164,7 @@ def install():
     options[f"_{_id}"] = models[_id].getValue()
   grist.setOptions(options).then(window.location.reload())
 
-def showEditOptions(options):
-  memory('preview')(False)
-  if options:
-    for _id in models:
-      memory(_id)(options[f"_{_id}"])
-  return showEditor()
-def onEditOptions(*args):
-  grist.getOptions().then(showEditOptions)
-  return True
-grist.ready({"onEditOptions": onEditOptions})
+grist.ready({"onEditOptions": showEditor})
 
 window.changeModel, window.install, window.showEditor, window.showPreview = \
   changeModel, install, showEditor, showPreview
