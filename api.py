@@ -164,7 +164,11 @@ def install():
     options[f"_{_id}"] = models[_id].getValue()
   grist.setOptions(options).then(window.location.reload())
 
-grist.ready({"onEditOptions": showEditor})
+grist.ready({
+  "allowSelectBy": True,
+  "onEditOptions": showEditor,
+  "requiredAccess": "full",
+})
 
 document.getElementById("install").onclick = install
 document.getElementById("preview").onclick = showPreview
