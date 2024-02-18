@@ -38,7 +38,14 @@ will make development environment ready: `docker run -it -v $PWD:/src pug_py`.
 
 Once changes are made to `index.pug` and `api.py`, run `./build.sh`.
 
+# Credits
+
+@berhalak for his [fiddle widget](https://github.com/berhalak/my-widgets/tree/main/fiddle), that was the basis of this one.
+
+@jperon for adaptation to pug and python.
 
 # License
+
+cf. [LICENSE](./LICENSE)
 
 All material in `lib` is third-party, under respective licenses.
