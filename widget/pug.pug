@@ -1,0 +1,14 @@
+doctype html
+html
+  head
+    script(src='https://docs.getgrist.com/grist-plugin-api.js')
+    script(src="js/markdown-it.min.js")
+    script(src='js/rapydscript.js')
+    script(src='js/jquery.js')
+    script(src='js/load-pyj.js' defer)
+
+  body Please select a record.
+  
+  footer
+    script var md = "!{cfg.options.md}"
+    script(type='pyj')!= getcode("py")
