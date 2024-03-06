@@ -1,46 +1,12 @@
-<!DOCTYPE html><html lang="en" style="height: 100%; margin: 0px; padding: 0px"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,height=device-height,initial-scale=1,viewport-fit=cover"><title>Pug and Python Widget</title><link rel="stylesheet" data-name="vs/editor/editor.main" href="lib/vs/editor/editor.main.css"><script src="https://docs.getgrist.com/grist-plugin-api.js"></script><script src="lib/pug.js"></script><script>var pug = require('pug');
-var require = {paths: {'vs': 'lib/vs'}};</script><script src="lib/vs/loader.js"></script><script src="lib/vs/editor/editor.main.nls.js"></script><script src="lib/vs/editor/editor.main.js"></script><script src="lib/brython.js"></script><style>body {height: 100%; display: flex; flex-direction: column; margin: 0px; overflow: hidden;}
-#page_editor {display: none; flex-grow:1; box-sizing: border-box; border-top:1px solid #a0a0a0;  border-bottom:1px solid #a0a0a0;}
-  #container {border-top:0px; height: 100%; box-sizing: border-box;}
-#page_widget {flex: 1; border: 0px; display: none;}
-  #page_widget iframe {height: 100%; width: 100%; border: 0px;}
-#_bar {display: none; flex: 0; justify-content: space-between; font-size: 12px; font-family: Arial, Helvetica, sans-serif;}
-  #_bar div {display: flex; flex-direction: row;}
-._tab {padding: 2px 8px; border: 1px solid gray; cursor: pointer;}
-  #pug {background: lightgreen;}
-  ._tab * {pointer-events: none;}
-._btn {padding: 2px 8px; border: 1px solid gray; cursor: pointer;}
-</style></head><body><div id="_bar"><div><div class="_tab" id="pug" data-type="pug"><text>PUG</text><div class="content" style="display:none;">doctype html
-html(lang="fr")
-  head
-    script(src="/grist-plugin-api.js")
-    script(src="lib/brython.js")
-    script(src="lib/toastui-chart.min.js")
-  body(onload="brython(2)")
-    #content
-    if rec || recs
-      pre
-        code.content= JSON.stringify((rec || recs), null, 2)
-    else
-      .content Veuillez sélectionner une ligne.
-    script(type="text/python").
-      from browser import console, document, window
-      from browser.html import CODE, DIV, EM, PRE
-      grist, JSON = window.grist, window.JSON
-      content_div = document.select_one("#content")
-
-      content_div <= DIV(EM("Voilà."))
-      def display(data):
-        content_div <= DIV(PRE(CODE(JSON.stringify(data))))
-      grist.docApi.fetchSelectedTable().then(display)</div></div><div class="_tab" id="py" data-type="python"><text>PY</text><div class="content" style="display:none;">from browser import window
-grist, render_pug = window.grist, window.render_pug
-
-def onRecord(rec, *args):
-  render_pug({{"rec": rec}})
-
-def onRecords(recs, *args):
-  render_pug({{"recs": recs}})
-
-#grist.onRecord(onRecord)
-#grist.onRecords(onRecords)
-render_pug()</div></div></div><div><div class="_btn" id="install">Install</div><div class="_btn" id="preview">Preview</div><div class="_btn" id="editor" style="display: none;">Editor</div></div></div><div id="page_editor"><div id="container"></div></div><div id="page_widget"></div><script type="module" src="js/api.js"></script></body></html>
+<!DOCTYPE html><html lang="en" style="height: 100%; margin: 0px; padding: 0px"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,height=device-height,initial-scale=1,viewport-fit=cover"><title>Pyscript cutom widget</title><link rel="stylesheet" href="js/codemirror/lib/codemirror.css"/><script src="https://docs.getgrist.com/grist-plugin-api.js"></script><script src="js/codemirror/lib/codemirror.js" defer></script><script src="js/codemirror/mode/pug/pug.js" defer></script><script src="js/codemirror/mode/python/python.js" defer></script><script src="js/codemirror/mode/toml/toml.js" defer></script><script src="js/pug.js"></script><script>var pug = require('pug');</script><script src="js/toml.js" defer></script><script src="js/rapydscript.js"></script><script src="api.js" defer></script><style>body {height: 100%; display: flex; flex-direction: column; margin: 0px; overflow: hidden;}
+#bar {display: none; flex: 0; justify-content: space-between; font-size: 12px; font-family: Arial, Helvetica, sans-serif;}
+  #bar div {display: flex; flex-direction: row;}
+  .tab {padding: 2px 8px; border: 1px solid gray; cursor: pointer;}
+    .tab * {pointer-events: none;}
+  .btn {padding: 2px 8px; border: 1px solid gray; cursor: pointer;}
+.errors {display: none; color: red;}
+#editors {display: inline-block; flex-grow:1; height: 90%; box-sizing: border-box; border-top:1px solid #a0a0a0;  border-bottom:1px solid #a0a0a0;}
+#widget {display: none; flex: 1; border: 0px;}
+  #widget iframe {height: 100%; width: 100%; border: 0px;}
+.CodeMirror {width: 100%; height: 100%;}
+</style></head><body><div id="bar"><div id="tabs"></div><div id="btns"><div class="btn" id="install">Install</div><div class="btn" id="preview">Preview</div><div class="btn" id="editor" style="display: none;">Editor</div></div></div><div class="errors" id="errors"></div><div class="errors" id="cfg_errors">Errors in config. Please cancel and fix them.</div><div id="editors"></div><div id="widget"><div></div></div></body></html>
