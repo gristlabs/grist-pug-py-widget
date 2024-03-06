@@ -119,9 +119,8 @@ def showPreview(*_):
   elif code.type == "html":
     new_iframe('widget', code.editor.getValue())
   elif code.type == "python":
-    pyscript = document.createElement("script")
-    pyscript.type = "pyj"
     try:
+      compiler = RapydScript.create_embedded_compiler()
       eval(compiler.compile(code.editor.getValue()))
     except Exception as e:
       console.error(e)

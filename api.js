@@ -4624,7 +4624,7 @@ var str = ρσ_str, repr = ρσ_repr;;
         function showPreview() {
             var _ = Array.prototype.slice.call(arguments, 0);
             if (arguments[arguments.length-1] !== null && typeof arguments[arguments.length-1] === "object" && arguments[arguments.length-1] [ρσ_kwargs_symbol] === true) _.pop();
-            var code, pyscript, errors, jsscript, codes, e, cat;
+            var code, compiler, errors, jsscript, codes, e, cat;
             the("errors").style.display = "none";
             code = widget.entrypoint;
             if ((code.type === "pug" || typeof code.type === "object" && ρσ_equals(code.type, "pug"))) {
@@ -4638,9 +4638,8 @@ var str = ρσ_str, repr = ρσ_repr;;
             } else if ((code.type === "html" || typeof code.type === "object" && ρσ_equals(code.type, "html"))) {
                 new_iframe("widget", code.editor.getValue());
             } else if ((code.type === "python" || typeof code.type === "object" && ρσ_equals(code.type, "python"))) {
-                pyscript = document.createElement("script");
-                pyscript.type = "pyj";
                 try {
+                    compiler = RapydScript.create_embedded_compiler();
                     eval(compiler.compile(code.editor.getValue()));
                 } catch (ρσ_Exception) {
                     ρσ_last_exception = ρσ_Exception;
