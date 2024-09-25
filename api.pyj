@@ -1,0 +1,217 @@
+widget_id = new URLSearchParams(location.search).get("id") or crypto.randomUUID()
+def the(*args): return document.getElementById(*args)
+def one(*args): return document.querySelector(*args)
+def all(*args): return document.querySelectorAll(*args)
+def log(*args): console.log(*args)
+def readfile(f):
+  request = new XMLHttpRequest()
+  request.open("GET", f, False)
+  request.send()
+  if request.status == 200:
+    return request.responseText
+
+CodeMirror.defaults.lineNumbers=True
+CodeMirror.defaults.indentWithTabs=False
+CodeMirror.defaults.viewportMargin=1000
+
+_memory = {}
+def memory(name):
+  key = f"__{widget_id}_{name}"
+  try:
+    if _memory[key]:
+      return _memory[key]
+  except KeyError:
+    pass
+  def fn(arg=None, clear=None):
+    if clear:
+      sessionStorage.removeItem(key)
+    if arg is None:
+      value = sessionStorage.getItem(key)
+      return JSON.parse(value) if value else value
+    else:
+      sessionStorage.setItem(key, JSON.stringify(arg))
+  _memory[key] = fn
+  return fn
+
+the('cfg_errors').style.display = "block"
+cfg = toml.parse(readfile("config.toml"))
+the('cfg_errors').style.display = "none"
+widget = cfg.widget
+
+def changeEditor(el):
+  target = el.target
+  for tab in all(".tab"):
+    tab.style.background = "transparent"
+  target.style.background = "lightgreen"
+  for code in widget.codes:
+    if code.tab == target.id:
+      code.wrapper.style.display = "block"
+    else:
+      code.wrapper.style.display = "none"
+
+def buildEditors(widget):
+  editors = the("editors")
+  tabs = the("tabs")
+  for code in widget.codes:
+    widget.codes[code.name] = code
+    if code.name == widget.entrypoint:
+      widget.entrypoint = code
+    textarea = document.createElement("textarea")
+    textarea.id = f"_{code.name}"
+    textarea.style.display = "none"
+    value = memory(code.name)()
+    if value:
+      textarea.value = value
+    elif code.file:
+      textarea.value = readfile(code.file)
+    editors.appendChild(textarea)
+    editor = CodeMirror.fromTextArea(textarea, {'mode': {'name': code.type}})
+    tab = document.createElement("div")
+    tab.id = f"tab_{code.name}"
+    tab.classList.add("tab")
+    tab.innerHTML = code.name
+    tab.onclick = changeEditor
+    tabs.appendChild(tab)
+    code.editor = editor.getDoc()
+    code.wrapper = editor.getWrapperElement()
+    code.wrapper.style.display = "none"
+    code.tab = tab.id
+  code = widget.codes[0]
+  code.wrapper.style.display = "block"
+  the(code.tab).style.background = "lightgreen"
+
+def getcode(id):
+  return widget.codes[id].editor.getValue()
+
+lastListener = None
+def new_iframe(el_id, htmlcode):
+  nonlocal lastListener
+  el = the(el_id)
+  wFrame = document.createElement('iframe')
+  while el.firstChild:
+    el.removeChild(el.firstChild)
+  el.appendChild(wFrame)
+  widgetWindow = wFrame.contentWindow
+  # Rewire messages between this widget, and the preview
+  try:
+    window.removeEventListener('message', lastListener)
+  except KeyError:
+    pass
+  def listener(e):
+    if e.source == widgetWindow:
+      window.parent.postMessage(e.data, "*")
+    elif e.source == window.parent:
+      widgetWindow.postMessage(e.data, "*")
+  lastListener = listener
+  window.addEventListener('message', listener)
+  content = wFrame.contentWindow
+  content.document.open()
+  content.document.write(htmlcode)
+  content.document.close()
+
+def showPreview(*_):
+  the("errors").style.display = "none"
+  code = widget.entrypoint
+  if code.type == "pug":
+    new_iframe('widget', pug.compile(code.editor.getValue())({
+      "grist": grist, "cfg": cfg, "getcode": getcode
+    }))
+  elif code.type == "html":
+    new_iframe('widget', code.editor.getValue())
+  elif code.type == "python":
+    pyscript = document.createElement("script")
+    pyscript.type = "pyj"
+    try:
+      eval(compiler.compile(code.editor.getValue()))
+    except Exception as e:
+      console.error(e)
+      errors = the("errors")
+      errors.innerHTML = str.format("""<code><pre>{}, line {}, col {}: {}</pre></code>""", code.name, e.line, e.col, e.message)
+      errors.style.display = "block"
+  elif code.type == "javascript":
+    jsscript = document.createElement("script")
+    jsscript.innerHTML = code.editor.getValue()
+    codes = widget.codes
+    document.body.appendChild(jsscript)
+  the("editors").style.display = 'none'
+  the('widget').style.display = 'block'
+  for cat in ('.tab', '.btn'):
+    for e in all(cat):
+      e.style.display = 'none'
+  the('install').style.display = 'inline-block'
+  the("editor").style.display = 'inline-block'
+  memory('preview')(True)
+
+def showEditor(*_):
+  the('bar').style.display = 'flex'
+  the('widget').style.display = 'none'
+  the("editors").style.display = 'inline-block'
+  memory('preview')(False)
+  for e in all('.tab'):
+    e.style.display = 'inline-block'
+  for e in all('.btn'):
+    e.style.display = 'none'
+  the('install').style.display = 'inline-block'
+  the('preview').style.display = 'inline-block'
+
+# Create cancellable onOptions version
+def onOptions(clb):
+  listen = True
+  def callback(*data):
+    if listen:
+      clb(*data)
+  def cancel():
+    listen = False
+  grist.onOptions(callback)
+  return cancel
+
+def callback(options, *_args):
+  global widget, cfg
+  try:
+    if widget.installed:
+      return
+  except TypeError: pass
+  if options and options.installed:
+    if options._cfg:
+      the('cfg_errors').style.display = "block"
+      cfg = toml.parse(options._cfg)
+      the('cfg_errors').style.display = "none"
+      widget = cfg.widget
+    widget.installed = True
+    widget.isEditor = False
+    the('bar').style.display = 'none'
+    for code in widget.codes:
+      memory(code.name)(options[f"_{code.name}"])
+    buildEditors(widget)
+    showPreview()
+    def cb(options, *_):
+      if not options:
+        memory('preview')(False)
+        location.reload()
+    onOptions(cb)
+    return
+  if not options:
+    for code in widget.codes:
+      memory(code.name)(clear=True)
+  if not widget.isEditor:
+    widget.isEditor = True
+    buildEditors(widget)
+    if memory('preview')():
+      showPreview()
+    else:
+      showEditor()
+onOptions(callback)
+
+def install(*_):
+  options = {"installed": True}
+  for code in widget.codes:
+    options[f"_{code.name}"] = code.editor.getValue()
+  grist.setOptions(options).then(window.location.reload())
+
+the("install").onclick = install
+the("preview").onclick = showPreview
+the("editor").onclick = showEditor
+the("editor").style.display = "inline-block"
+
+cfg.grist.onEditOptions = showEditor
+grist.ready(cfg.grist)

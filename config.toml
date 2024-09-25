@@ -1,0 +1,31 @@
+title = "Pug/py widget"
+
+# Custom options: you may define whichever options you like (toml format).
+[options]
+md = "Markdown"
+
+
+# Grist options. See support.getgrist.com for more
+[grist]
+allowSelectBy = false           # true if you want to define a selector widget
+requiredAccess = "read table"   # "full" if you intend to change data
+
+# Widget options
+[widget]
+entrypoint = "pug"              # Name of one of the codes below
+
+# You may define various editors below. There must be at leat cfg and the entrypoint.
+[[widget.codes]]
+name = "cfg"                    # Must be unique
+type = "toml"                   # This will determine CodeMirror’s mode
+file = "config.toml"            # Optional: file to load at widget creation
+
+[[widget.codes]]
+name = "pug"
+type = "pug"
+file = "widget/pug.pug"
+
+[[widget.codes]]
+name = "py"
+type = "python"
+file = "widget/py.pyj"

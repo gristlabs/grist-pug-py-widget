@@ -1,0 +1,3 @@
+grist.onRecord(def(rec):
+  $("body").empty().append(markdownit().render(rec[md]))
+)

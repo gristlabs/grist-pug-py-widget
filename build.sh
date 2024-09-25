@@ -1,4 +1,7 @@
 #!/usr/bin/env sh
 
-python -m transcrypt --nomin --map --verbose --outdir js api.py
-yarn pug index.pug
+[ -f package-lock.json ] || npm i
+npx pug index.pug
+npx rapydscript api.pyj -o api.js
+sed -i 's/ || typeof e.source === "object" && ρσ_equals(e.source, widgetWindow)//g' api.js
+sed -i 's/ || typeof e.source === "object" && ρσ_equals(e.source, window.parent)//g' api.js
